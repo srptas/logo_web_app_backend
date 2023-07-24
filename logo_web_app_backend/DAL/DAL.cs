@@ -1,4 +1,5 @@
-﻿using logo_web_app_backend.Models;
+﻿using logo_web_app_backend.Common;
+using logo_web_app_backend.Models;
 using System;
 using System.Data;
 using System.Data.SqlClient;
@@ -21,6 +22,8 @@ namespace logo_web_app_backend.Controllers
 
                 List<User> users = new List<User>();
 
+                
+
                 using (SqlDataAdapter adapter = new SqlDataAdapter(command))
                 {
                     adapter.Fill(dt);
@@ -33,7 +36,10 @@ namespace logo_web_app_backend.Controllers
 
                             user.Id = Convert.ToInt32(row["Id"]);
                             user.UserName = Convert.ToString(row["UserName"]);
-                            user.Password = Convert.ToString(row["Password"]);
+
+                            // Encrypt the password using ConvertToEncrypt function
+                            string encryptedPassword = CommonMethods.ConvertoEncrypt(Convert.ToString(row["Password"]));
+                            user.Password = encryptedPassword;
                             user.Email = Convert.ToString(row["Email"]);
                             user.IsActive = Convert.ToInt32(row["IsActive"]);
 
@@ -127,7 +133,7 @@ namespace logo_web_app_backend.Controllers
 
                 // Set the parameter values
                 command.Parameters.Add("@UserName", SqlDbType.VarChar).Value = user.UserName;
-                command.Parameters.Add("@Password", SqlDbType.VarChar).Value = user.Password;
+                command.Parameters.Add("@Password", SqlDbType.VarChar).Value = CommonMethods.ConvertoEncrypt(user.Password);
 
                 // closes the connection automatically
                 // garbage collector
@@ -149,7 +155,7 @@ namespace logo_web_app_backend.Controllers
                     else
                     {
                         response.statusCode = 100;
-                        response.statusMessage = "Login failed!";
+                        response.statusMessage = "Wrong username or password!";
                     }
                 }
             }
@@ -186,7 +192,6 @@ namespace logo_web_app_backend.Controllers
         }
 
       
-
         public Response RegistrationUser(SqlConnection conn, User user)
         {
             Response response = new Response();
@@ -196,7 +201,7 @@ namespace logo_web_app_backend.Controllers
             using (SqlCommand cmd = new SqlCommand(query, conn))
             {
                 cmd.Parameters.Add("@UserName", SqlDbType.VarChar).Value = user.UserName;
-                cmd.Parameters.Add("@Password", SqlDbType.VarChar).Value = user.Password;
+                cmd.Parameters.Add("@Password", SqlDbType.VarChar).Value = CommonMethods.ConvertoEncrypt(user.Password);
                 cmd.Parameters.Add("@Email", SqlDbType.VarChar).Value = user.Email;
                 cmd.Parameters.Add("@IsActive", SqlDbType.Bit).Value = user.IsActive;
 
@@ -269,7 +274,7 @@ namespace logo_web_app_backend.Controllers
                 // Set the parameter values
                 cmd.Parameters.Add("@UserName", SqlDbType.VarChar).Value = user.UserName;
                 cmd.Parameters.Add("@Email", SqlDbType.VarChar).Value = user.Email;
-                cmd.Parameters.Add("@Password", SqlDbType.VarChar).Value = user.Password;
+                cmd.Parameters.Add("@Password", SqlDbType.VarChar).Value = CommonMethods.ConvertoEncrypt(user.Password);
                 cmd.Parameters.Add("@Id", SqlDbType.Int).Value = id;
 
                 try

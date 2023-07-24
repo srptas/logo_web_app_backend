@@ -160,8 +160,5 @@ namespace logo_web_app_backend.Controllers
 
         }
 
-
-
-
     }
 }
