@@ -129,7 +129,7 @@ namespace logo_web_app_backend.Controllers
                 command.Parameters.Add("@UserName", SqlDbType.VarChar).Value = user.UserName;
                 command.Parameters.Add("@Password", SqlDbType.VarChar).Value = user.Password;
 
-                // closes the connection otomatically
+                // closes the connection automatically
                 // garbage collector
                 using (SqlDataReader reader = command.ExecuteReader(CommandBehavior.SequentialAccess))
                 {
