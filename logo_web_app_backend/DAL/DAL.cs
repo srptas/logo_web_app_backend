@@ -8,10 +8,58 @@ namespace logo_web_app_backend.Controllers
     public class DAL
     {
 
-        // bu bir deneme
         public Response GetAllUsers(SqlConnection conn)
         {
+            Response response = new Response();
 
+            string query = "SELECT * FROM Registration";
+
+            using (SqlCommand command = new SqlCommand(query, conn))
+            {
+                conn.Open();
+                DataTable dt = new DataTable();
+
+                List<User> users = new List<User>();
+
+                using (SqlDataAdapter adapter = new SqlDataAdapter(command))
+                {
+                    adapter.Fill(dt);
+
+                    if (dt.Rows.Count > 0)
+                    {
+                        foreach (DataRow row in dt.Rows)
+                        {
+                            User user = new User();
+
+                            user.Id = Convert.ToInt32(row["Id"]);
+                            user.UserName = Convert.ToString(row["UserName"]);
+                            user.Password = Convert.ToString(row["Password"]);
+                            user.Email = Convert.ToString(row["Email"]);
+                            user.IsActive = Convert.ToInt32(row["IsActive"]);
+
+                            users.Add(user);
+                        }
+                    }
+                }
+
+                if (users.Count > 0)
+                {
+                    response.statusCode = 200;
+                    response.statusMessage = "Data Found";
+                    response.users = users;
+                }
+                else
+                {
+                    response.statusCode = 100;
+                    response.statusMessage = "Data not found";
+                    response.users = null;
+                }
+            }
+
+            return response;
+
+
+            /* OLD QUERY FOR GETUSERS
             Response response = new Response();
 
             SqlDataAdapter adapter = new SqlDataAdapter("SELECT * FROM Registration", conn);
@@ -56,31 +104,13 @@ namespace logo_web_app_backend.Controllers
             }
 
             return response;
+            */
         }
 
         public Response Login(SqlConnection conn, User user)
-        {/*
-            string query = @" INSERT INTO [dbo].[InvoiceDesignAnaliseResult] 
-                                ([Created],[InvoiceDesignId],[ScriptElement],[FirmaImzasi],[GibLogo],[AltName1],[AltName2],[AltName3],[AltName4],[Status],[Description])
-                                VALUES(GETDATE(),@InvoiceDesignId,@ScriptElement,@FirmaImzasi,@GibLogo,@AltName1,@AltName2,@AltName3,@AltName4,@Status,@Description) "
-            ;
+        {
 
-            using (SqlConnection connection = new SqlConnection(Setting.MainConnectionString))
-            using (SqlCommand command = new SqlCommand(query, connection))
-            {
-                connection.Open();
-
-                command.CommandType = CommandType.Text;
-
-                command.Parameters.Add("@InvoiceDesignId", SqlDbType.Int).Value = recInf.id;
-                command.Parameters.Add("@GibLogo", SqlDbType.Int).Value = analizer.ScriptElement == null ? 0 : 1;
-                command.Parameters.Add("@GibLogo", SqlDbType.Int).Value = analizer.GibLogoElement == null ? 0 : 1;
-
-                command.ExecuteNonQuery();
-            }
-            */
-
-            /*
+            
             string query = @"SELECT [Username],[Password]
                              FROM Registration
                              WHERE UserName=@UserName AND Password=@Password";
@@ -95,11 +125,11 @@ namespace logo_web_app_backend.Controllers
 
                 command.CommandType = CommandType.Text;
 
-                command.Parameters.Add("@UserName", SqlDbType.VarChar).Value = "";
-                command.Parameters.Add("@Password", SqlDbType.VarChar).Value = "";
+                // Set the parameter values
+                command.Parameters.Add("@UserName", SqlDbType.VarChar).Value = user.UserName;
+                command.Parameters.Add("@Password", SqlDbType.VarChar).Value = user.Password;
 
-
-                // connection ı otomatik kapatır
+                // closes the connection otomatically
                 // garbage collector
                 using (SqlDataReader reader = command.ExecuteReader(CommandBehavior.SequentialAccess))
                 {
@@ -107,13 +137,13 @@ namespace logo_web_app_backend.Controllers
                     {
                         var recInf = new User
                         {
-                            // kolon sırasına göre
-                            UserName = reader.GetString("UserName"),
-                            Password = reader.GetString("Password")
+                            // GetOrdinal helps to avoid any issues that might arise due to column order changes in the SQL query.
+                            UserName = reader.GetString(reader.GetOrdinal("UserName")),
+                            Password = reader.GetString(reader.GetOrdinal("Password"))
 
                         };
                         response.statusCode = 200;
-                        response.statusMessage = "Data Inserted!";
+                        response.statusMessage = "Login succesful";
 
                     }
                     else
@@ -125,11 +155,11 @@ namespace logo_web_app_backend.Controllers
             }
 
             return response;
-            */
-
             
 
             
+
+            /* OLD QUERY FOR LOGIN
             string query2 = "SELECT * FROM Registration WHERE UserName = '" + user.UserName + "' AND Password = '" + user.Password + "' ";
             SqlDataAdapter da = new SqlDataAdapter(query2, conn);
             DataTable dt = new DataTable();
@@ -150,7 +180,7 @@ namespace logo_web_app_backend.Controllers
             }
             
             return response;
-
+            */
             
             
         }
@@ -159,6 +189,50 @@ namespace logo_web_app_backend.Controllers
 
         public Response RegistrationUser(SqlConnection conn, User user)
         {
+            Response response = new Response();
+
+            string query = "INSERT INTO Registration(UserName, Password, Email, IsActive) VALUES (@UserName, @Password, @Email, @IsActive)";
+
+            using (SqlCommand cmd = new SqlCommand(query, conn))
+            {
+                cmd.Parameters.Add("@UserName", SqlDbType.VarChar).Value = user.UserName;
+                cmd.Parameters.Add("@Password", SqlDbType.VarChar).Value = user.Password;
+                cmd.Parameters.Add("@Email", SqlDbType.VarChar).Value = user.Email;
+                cmd.Parameters.Add("@IsActive", SqlDbType.Bit).Value = user.IsActive;
+
+                try
+                {
+                    conn.Open();
+                    int i = cmd.ExecuteNonQuery();
+
+                    if (i > 0)
+                    {
+                        response.statusCode = 200;
+                        response.statusMessage = "Data Inserted!";
+                    }
+                    else
+                    {
+                        response.statusCode = 100;
+                        response.statusMessage = "No data inserted.";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Handle the exception, e.g., log the error or return an error response.
+                    response.statusCode = 500;
+                    response.statusMessage = "An error occurred: " + ex.Message;
+                }
+                finally
+                {
+                    conn.Close();
+                }
+            }
+
+            return response;
+
+
+
+            /* OLD QUERY FOR REGISTRATION
             Response response = new Response();
 
             SqlCommand cmd = new SqlCommand("INSERT INTO Registration(UserName, Password, Email, IsActive) VALUES ('" + user.UserName + "',' " + user.Password + "','" + user.Email + "','" + user.IsActive + "')", conn);
@@ -180,12 +254,55 @@ namespace logo_web_app_backend.Controllers
             }
 
             return response;
+            */
         }
 
 
         public Response UpdateUser(SqlConnection conn, User user, int id)
         {
+            Response response = new Response();
 
+            string query = "UPDATE Registration SET UserName = @UserName, Email = @Email, Password = @Password WHERE Id = @Id";
+
+            using (SqlCommand cmd = new SqlCommand(query, conn))
+            {
+                // Set the parameter values
+                cmd.Parameters.Add("@UserName", SqlDbType.VarChar).Value = user.UserName;
+                cmd.Parameters.Add("@Email", SqlDbType.VarChar).Value = user.Email;
+                cmd.Parameters.Add("@Password", SqlDbType.VarChar).Value = user.Password;
+                cmd.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+
+                try
+                {
+                    conn.Open();
+                    int i = cmd.ExecuteNonQuery();
+
+                    if (i > 0)
+                    {
+                        response.statusCode = 200;
+                        response.statusMessage = "User updated!";
+                    }
+                    else
+                    {
+                        response.statusCode = 100;
+                        response.statusMessage = "No data updated";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Handle the exception, e.g., log the error or return an error response.
+                    response.statusCode = 500;
+                    response.statusMessage = "An error occurred: " + ex.Message;
+                }
+                finally
+                {
+                    conn.Close();
+                }
+            }
+
+            return response;
+
+            /* OLD QUERY FOR UPDATE USER
             Response response = new Response();
 
             SqlCommand cmd = new SqlCommand("UPDATE Registration SET UserName = '" + user.UserName + "', Email = '" + user.Email + "', Password = '" + user.Password + "' WHERE Id = '" + id + "' ", conn);
@@ -207,12 +324,52 @@ namespace logo_web_app_backend.Controllers
             }
 
             return response;
+            */
         }
 
 
         public Response DeleteUser(SqlConnection conn, int id)
         {
+            Response response = new Response();
 
+            string query = "DELETE FROM Registration WHERE ID = @Id";
+
+            using (SqlCommand cmd = new SqlCommand(query, conn))
+            {
+                // Set the parameter value
+                cmd.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+
+                try
+                {
+                    conn.Open();
+                    int i = cmd.ExecuteNonQuery();
+
+                    if (i > 0)
+                    {
+                        response.statusCode = 200;
+                        response.statusMessage = "User deleted";
+                    }
+                    else
+                    {
+                        response.statusCode = 100;
+                        response.statusMessage = "No user deleted";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Handle the exception, e.g., log the error or return an error response.
+                    response.statusCode = 500;
+                    response.statusMessage = "An error occurred: " + ex.Message;
+                }
+                finally
+                {
+                    conn.Close();
+                }
+            }
+
+            return response;
+
+            /* OLD QUERY FOR DELETE USER
             Response response = new Response();
 
             SqlCommand cmd = new SqlCommand("DELETE FROM Registration WHERE ID = '" + id + "'", conn);
@@ -234,8 +391,7 @@ namespace logo_web_app_backend.Controllers
             }
 
             return response;
+            */
         }
-
-
     }
 }
