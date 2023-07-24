@@ -8,6 +8,7 @@ namespace logo_web_app_backend.Controllers
     public class DAL
     {
 
+        // bu bir deneme
         public Response GetAllUsers(SqlConnection conn)
         {
 
@@ -126,7 +127,7 @@ namespace logo_web_app_backend.Controllers
             return response;
             */
 
-
+            
 
             
             string query2 = "SELECT * FROM Registration WHERE UserName = '" + user.UserName + "' AND Password = '" + user.Password + "' ";
@@ -149,9 +150,12 @@ namespace logo_web_app_backend.Controllers
             }
             
             return response;
+
+            
             
         }
 
+      
 
         public Response RegistrationUser(SqlConnection conn, User user)
         {
@@ -184,7 +188,7 @@ namespace logo_web_app_backend.Controllers
 
             Response response = new Response();
 
-            SqlCommand cmd = new SqlCommand("UPDATE Registration SET UserName = '" + user.UserName + "', Email = '" + user.Email + "' WHERE Id = '" + id + "' ", conn);
+            SqlCommand cmd = new SqlCommand("UPDATE Registration SET UserName = '" + user.UserName + "', Email = '" + user.Email + "', Password = '" + user.Password + "' WHERE Id = '" + id + "' ", conn);
 
             conn.Open();
 
