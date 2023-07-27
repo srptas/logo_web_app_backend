@@ -2,6 +2,8 @@
 
 namespace logo_web_app_backend.Common
 {
+
+  
     public static class CommonMethods
     {
         public static string Key = "Zd1awxZ0";
@@ -17,6 +19,8 @@ namespace logo_web_app_backend.Common
 
         }
 
+
+
         public static string ConvertoDecrypt(string base64EncodeData)
         {
             if (string.IsNullOrEmpty(base64EncodeData)) return "";
@@ -27,6 +31,8 @@ namespace logo_web_app_backend.Common
             return result;
 
         }
+    
 
     }
+    
 }

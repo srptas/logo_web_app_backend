@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using logo_web_app_backend.Models;
+
 
 namespace logo_web_app_backend.Controllers
 {
@@ -11,7 +13,7 @@ namespace logo_web_app_backend.Controllers
         [AllowAnonymous]
         [HttpPost]
 
-        public IActionResult Authenticate([FromBody] AuthModel model)
+        public IActionResult AuthenticateUser([FromBody] AuthResponse model)
         {
             if (model.UserName == "Admin" && model.Password == "123")
             {
@@ -25,13 +27,4 @@ namespace logo_web_app_backend.Controllers
         }
     }
 
-    public class AuthModel
-    {
-
-        public string UserName { get; set; }
-
-        public string Password { get; set; }
-
-
-    }
 }

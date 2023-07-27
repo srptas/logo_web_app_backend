@@ -1,8 +1,10 @@
 ﻿using logo_web_app_backend.Common;
 using logo_web_app_backend.Models;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Data;
 using System.Data.SqlClient;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace logo_web_app_backend.Controllers
 {
@@ -113,7 +115,7 @@ namespace logo_web_app_backend.Controllers
             */
         }
 
-        public Response Login(SqlConnection conn, User user)
+        public AuthResponse Login(SqlConnection conn, User user)
         {
 
             
@@ -122,7 +124,7 @@ namespace logo_web_app_backend.Controllers
                              WHERE UserName=@UserName AND Password=@Password";
 
 
-            Response response = new Response();
+            AuthResponse response = new AuthResponse();
 
 
             using (SqlCommand command = new SqlCommand(query, conn))
@@ -148,8 +150,22 @@ namespace logo_web_app_backend.Controllers
                             Password = reader.GetString(reader.GetOrdinal("Password"))
 
                         };
+                        string token = TokenService.GenerateToken(user.UserName);
+
                         response.statusCode = 200;
                         response.statusMessage = "Login succesful";
+                        response.token = token;
+
+                        AuthResponse tokenValidationResult = TokenService.ValidateToken(token);
+
+                        if (tokenValidationResult.statusCode != 200)
+                        {
+                            // Token validation failed
+                            // You can handle this case as needed, such as logging the error or returning an error response
+                            response.statusCode = tokenValidationResult.statusCode;
+                            response.statusMessage = tokenValidationResult.statusMessage;
+                            response.token = null; // Clear the token since it's not valid
+                        }
 
                     }
                     else
@@ -163,16 +179,16 @@ namespace logo_web_app_backend.Controllers
             return response;
             
 
-            
-
-            /* OLD QUERY FOR LOGIN
+           
+            /*
+            // OLD QUERY FOR LOGIN
             string query2 = "SELECT * FROM Registration WHERE UserName = '" + user.UserName + "' AND Password = '" + user.Password + "' ";
             SqlDataAdapter da = new SqlDataAdapter(query2, conn);
             DataTable dt = new DataTable();
 
             da.Fill(dt);
 
-            Response response = new Response();
+            AuthResponse response = new AuthResponse();
 
             if (dt.Rows.Count > 0)
             {
