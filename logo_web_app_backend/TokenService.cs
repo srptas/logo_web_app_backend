@@ -17,7 +17,7 @@ namespace logo_web_app_backend
         public const string AUDIENCE = "https://localhost:44368";
 
 
-        public static string GenerateToken(string username)
+        public static string GenerateToken(string username, string email)
         {
             byte[] key = Encoding.UTF8.GetBytes(SECRET_KEY);
 
@@ -27,7 +27,8 @@ namespace logo_web_app_backend
 
             List<Claim> claims = new List<Claim>
             {
-                new Claim (ClaimTypes.Name, username)
+                new Claim (ClaimTypes.Name, username),
+                new Claim (ClaimTypes.Email, email)
 
             };
 

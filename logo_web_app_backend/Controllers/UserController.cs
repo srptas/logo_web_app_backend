@@ -1,6 +1,7 @@
 ﻿using logo_web_app_backend.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.Data;
@@ -17,13 +18,16 @@ namespace logo_web_app_backend.Controllers
     {
         private readonly IConfiguration _configuration;
 
-        public UserController(IConfiguration configuration)
+       
+
+        public UserController(IConfiguration configuration, UserManager<User> userManager)
         {
             _configuration = configuration;
+
         }
 
 
-        
+
         //[Authorize]
 
         [HttpGet]
@@ -55,6 +59,8 @@ namespace logo_web_app_backend.Controllers
             DAL dal = new DAL();
 
             response = dal.RegistrationUser(conn, registration);
+
+            
 
 
             return response;  

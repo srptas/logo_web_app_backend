@@ -3,7 +3,6 @@
 namespace logo_web_app_backend.Common
 {
 
-  
     public static class CommonMethods
     {
         public static string Key = "Zd1awxZ0";
@@ -34,5 +33,6 @@ namespace logo_web_app_backend.Common
     
 
     }
+    
     
 }

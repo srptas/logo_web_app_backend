@@ -5,6 +5,7 @@ using System;
 using System.Data;
 using System.Data.SqlClient;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Cryptography;
 
 namespace logo_web_app_backend.Controllers
 {
@@ -118,10 +119,9 @@ namespace logo_web_app_backend.Controllers
         public AuthResponse Login(SqlConnection conn, User user)
         {
 
-            
             string query = @"SELECT [Username],[Password]
                              FROM Registration
-                             WHERE UserName=@UserName AND Password=@Password";
+                             WHERE UserName=@UserName AND Password=@Password AND IsActive=@IsActive";
 
 
             AuthResponse response = new AuthResponse();
@@ -136,21 +136,25 @@ namespace logo_web_app_backend.Controllers
                 // Set the parameter values
                 command.Parameters.Add("@UserName", SqlDbType.VarChar).Value = user.UserName;
                 command.Parameters.Add("@Password", SqlDbType.VarChar).Value = CommonMethods.ConvertoEncrypt(user.Password);
+                command.Parameters.Add("@IsActive", SqlDbType.Binary).Value = user.IsActive;
 
                 // closes the connection automatically
                 // garbage collector
                 using (SqlDataReader reader = command.ExecuteReader(CommandBehavior.SequentialAccess))
                 {
-                    if (reader.Read())
+                    if (reader.Read() && user.IsActive == 1)
                     {
                         var recInf = new User
                         {
                             // GetOrdinal helps to avoid any issues that might arise due to column order changes in the SQL query.
                             UserName = reader.GetString(reader.GetOrdinal("UserName")),
-                            Password = reader.GetString(reader.GetOrdinal("Password"))
+                            Password = reader.GetString(reader.GetOrdinal("Password")),
+                            IsActive = reader.GetByte(reader.GetOrdinal("IsActive"))
 
                         };
-                        string token = TokenService.GenerateToken(user.UserName);
+
+                        
+                        string token = TokenService.GenerateToken(user.UserName, user.Email);
 
                         response.statusCode = 200;
                         response.statusMessage = "Login succesful";
@@ -168,6 +172,10 @@ namespace logo_web_app_backend.Controllers
                         }
 
                     }
+                    if(user.IsActive == 0)
+                    {
+                        response.statusMessage = "Please verify your email address.";
+                    }
                     else
                     {
                         response.statusCode = 100;
@@ -179,7 +187,7 @@ namespace logo_web_app_backend.Controllers
             return response;
             
 
-           
+            
             /*
             // OLD QUERY FOR LOGIN
             string query2 = "SELECT * FROM Registration WHERE UserName = '" + user.UserName + "' AND Password = '" + user.Password + "' ";
@@ -210,9 +218,11 @@ namespace logo_web_app_backend.Controllers
       
         public Response RegistrationUser(SqlConnection conn, User user)
         {
+            string emailConfirmationToken = GenerateEmailConfirmationToken();
+
             Response response = new Response();
 
-            string query = "INSERT INTO Registration(UserName, Password, Email, IsActive) VALUES (@UserName, @Password, @Email, @IsActive)";
+            string query = "INSERT INTO Registration(UserName, Password, Email, IsActive, EmailConfirmationToken) VALUES (@UserName, @Password, @Email, @IsActive, @EmailConfirmationToken)";
 
             using (SqlCommand cmd = new SqlCommand(query, conn))
             {
@@ -220,6 +230,8 @@ namespace logo_web_app_backend.Controllers
                 cmd.Parameters.Add("@Password", SqlDbType.VarChar).Value = CommonMethods.ConvertoEncrypt(user.Password);
                 cmd.Parameters.Add("@Email", SqlDbType.VarChar).Value = user.Email;
                 cmd.Parameters.Add("@IsActive", SqlDbType.Bit).Value = user.IsActive;
+                cmd.Parameters.Add("@EmailConfirmationToken", SqlDbType.VarChar).Value = emailConfirmationToken;
+
 
                 try
                 {
@@ -278,6 +290,10 @@ namespace logo_web_app_backend.Controllers
             */
         }
 
+        private string GenerateEmailConfirmationToken()
+        {
+            throw new NotImplementedException();
+        }
 
         public Response UpdateUser(SqlConnection conn, User user, int id)
         {

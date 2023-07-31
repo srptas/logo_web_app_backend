@@ -6,6 +6,7 @@ using logo_web_app_backend.Models;
 
 namespace logo_web_app_backend.Controllers
 {
+    /*
     [Route("[controller]/[action]")]
     [ApiController]
     public class AuthController : ControllerBase
@@ -17,14 +18,15 @@ namespace logo_web_app_backend.Controllers
         {
             if (model.UserName == "Admin" && model.Password == "123")
             {
-                return Ok(TokenService.GenerateToken(model.UserName));
+                return Ok(TokenService.GenerateToken(model.UserName, model.Email));
             }
             else
             {
-                return BadRequest("Wrong Username or Password!"); //hata koduna bak
+                return BadRequest("Wrong Username or Password!"); 
             }
 
         }
     }
+    */
 
 }

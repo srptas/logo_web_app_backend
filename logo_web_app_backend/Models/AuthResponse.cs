@@ -6,6 +6,10 @@
 
         public string Password { get; set; }
 
+        public string Email { get; set; }
+
+        //public string IsActive{ get; set; }
+
         public int statusCode { get; set; }
 
         public string statusMessage { get; set; }
